@@ -650,6 +650,68 @@
       }
     }
   ],
+  "reference_research_study_list": [
+    {
+      "title": "Torchmetrics"
+    },
+    {
+      "title": "Analytic-dpm: an analytic estimate of the optimal reverse variance in diffusion probabilistic models"
+    },
+    {
+      "title": "Stable video diffusion: Scaling latent video diffusion models to large datasets"
+    },
+    {
+      "title": "Align your latents: High-resolution video synthesis with latent diffusion models"
+    },
+    {
+      "title": "Genie: Higher-order denoising diffusion solvers"
+    },
+    {
+      "title": "Structural pruning for diffusion models"
+    },
+    {
+      "title": "Sparsegpt: Massive language models can be accurately pruned in one-shot"
+    },
+    {
+      "title": "Gptq: Accurate post-training compression for generative pretrained transformers"
+    },
+    {
+      "title": "On the content bias in fréchet video distance"
+    },
+    {
+      "title": "E2gan: Efficient training of efficient gans for image-to-image translation"
+    },
+    {
+      "title": "Animatediff: Animate your personalized text-to-image diffusion models without specific tuning"
+    },
+    {
+      "title": "Filter pruning via geometric median for deep convolutional neural networks acceleration"
+    },
+    {
+      "title": "Latent video diffusion models for high-fidelity long video generation"
+    },
+    {
+      "title": "Clipscore: A reference-free evaluation metric for image captioning"
+    },
+    {
+      "title": "Imagen video: High definition video generation with diffusion models"
+    },
+    {
+      "title": "Classifier-free diffusion guidance"
+    },
+    {
+      "title": "Video diffusion models"
+    },
+    {
+      "title": "Distilling diffusion models into conditional gans"
+    },
+    {
+      "title": "Elucidating the design space of diffusion-based generative models"
+    },
+    {
+      "title": "Pika labs ai text to video generator"
+    }
+  ],
   "new_method": {
     "method": "Open Problems: Current diffusion backbones (UNet, DiT, S4D, etc.) were designed for speed or quality, but not for end-to-end memory frugality. \n1. Training-time memory: Even after gradient-checkpointing a 1-B-parameter UNet keeps >20 GB of activations for 1024×1024 images. All existing memory-saving works (Streamlined-Inference slicing, Step-Rehash, KV-compression, PTQ4DM, pruning) target inference only, so models still require multi-GPU rigs to train or fine-tune.\n2. Architectural rigidity: Slicing / pruning treat the network as a black box; therefore they cannot exploit layer-level structure (e.g. reversible flows) to avoid storing activations in the first place.\n3. Coupled spatial & temporal growth: For video or large-resolution images, memory scales with H×W×T. No published architecture lets every block decide at run-time which dimensions to keep in memory without quality loss.\n\nKey challenge: Design a diffusion architecture that is intrinsically memory-efficient during BOTH training and inference, without sacrificing quality, and that degrades gracefully when generating very high-resolution or long videos on a single commodity GPU.\nMethods: We propose \"Reversible Modular Chunked Diffusion\" (RMCD), a backbone that eliminates most activation storage and allows elastic resource use.\n\nCore ideas\n1. Reversible Dual-Stream Blocks (R-Blocks)\n   • Inspired by RevNet, each diffusion block splits its channels (u,v).  f and g are light SSM or local-attention functions (memory-light) so that (u,v) can be recomputed from outputs, removing the need to save activations during back-prop.\n   • f uses gated S4D when spatial size ≥64, and switches to windowed self-attention when size <64.\n2. Operator-Aligned Micro-Chunking\n   • The network is written in Triton kernels that accept an (N,C,H,W) tensor list and process it in micro-tiles (e.g. C/8, H/4) that fit into L2 cache. Because chunking is part of the forward definition, no external graph rewrite (Streamlined-Inference) is required and it works for training too.\n   • A scheduler chooses chunk sizes per layer by measuring tensor shapes online (one CUDA graph per shape).\n3. Dynamic Spatial Gating (DSG)\n   • Before each R-Block we insert a tiny gating net that predicts a binary mask of tiles to process at this timestep, conditioned on the current noise level t. Masked tiles are copied through, preventing useless compute/memory at early noisy steps.\n4. Low-rank Parameter Packs (LoRa-Fuse)\n   • All convolutions/SSMs are stored as W0+Δ where Δ is rank-4 LoRA. At train time only Δ is updated; W0 is kept in 8-bit (PTQ4DM) and dequantised on-the-fly inside the Triton kernel, saving optimizer & gradient memory.\n5. Unified API\n   • Implemented as a diffusers-compatible UNet subclass. Reversible checkpoints are optional so legacy tricks (gradient checkpointing, FME slicing) can still be added.\n\nHow RMCD differs from prior work\n• Unlike Streamlined-Inference, chunking is *architectural* and affects backward pass.\n• Unlike Diff-Pruning or PTQ4DM, it removes activation memory rather than weight memory only.\n• Combines reversible computation (unused in diffusion so far) with adaptive tile gating to cut both FLOPs and RAM for large H,W,T.\nExperimental Setup: Datasets / Tasks\n1. Image: LAION-Aesthetics subset, train at 768×768.\n2. Video: WebVid-10M, 16 frames, 512×512.\n\nBaselines\nA. Standard UNet (SD-v1.5) with gradient-checkpointing.\nB. FME-wrapped UNet (Streamlined Inference).\nC. DIFFU SSM-XL (state-space, attention-free).\n\nMetrics\n• Peak GPU memory during training and inference.\n• Training wall-clock (images/sec) on a single RTX 4090 (24 GB) and on A100 (40 GB) for fairness.\n• FID / CLIP-Score (images), FVD / CLIP-Video (video).\n• Ablation: Remove R-Block reversibility, remove DSG, disable LoRa-Fuse.\n• Robustness: Generate 4096×4096 images and 48-frame 1024×576 videos; record OOM rate and quality.\n\nProcedure\n1. Train RMCD and baselines for equal compute (e.g. 200K steps, batch size chosen to fit).\n2. Fine-tune RMCD with LoRa-Fuse (only Δ) on 20 custom DreamBooth subjects – measure peak memory and quality.\n3. Evaluate inference memory & speed with and without operator-aligned micro-chunking.\nResult: Expected\n• Training memory: RMCD <10 GB for 768×768 images on RTX 4090, vs 22 GB (UNet) and 18 GB (DIFFU SSM).\n• Inference memory: 40-50 % lower than FME-wrapped UNet at same resolution; latency equal or faster because of DSG.\n• Quality: FID within +0.3 of baseline UNet; video FVD within +2.\n• Ablations show 2× memory rise when reversibility off, +30 % FLOPs when DSG off, negligible quality loss when LoRa-Fuse on.\n• 4096×4096 generation succeeds on 24 GB GPU with RMCD, while baselines OOM.\n• DreamBooth fine-tuning fits in 11 GB versus 26 GB for LoRA-UNet, same subject fidelity.\nConclusion: RMCD demonstrates that memory efficiency can be baked into the *architecture* of diffusion models, enabling both training and inference of high-resolution (and long-sequence) generative models on commodity hardware. By combining reversible computation, built-in micro-chunking, adaptive spatial gating, and low-rank parameter packs, RMCD cuts activation, weight, and optimizer memory simultaneously with minimal quality trade-off.\n\nPractically, this lowers the barrier to domain-specific fine-tuning (e.g., on-device personalization) and ultra-high-resolution content creation. Academically, it opens a new design space where diffusion backbones are evaluated not only for quality/speed but also for intrinsic memory footprint. Future work can explore extending RMCD to text-to-3D, integrating with dynamic distributed schedulers, or co-designing with hardware accelerators for further gains.",
     "experimental_design": {

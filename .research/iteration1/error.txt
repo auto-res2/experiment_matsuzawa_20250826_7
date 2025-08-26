@@ -1,0 +1,19 @@
+/home/runner/work/experiment_matsuzawa_20250826_7/experiment_matsuzawa_20250826_7/src/train.py:421: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=(amp and device.type == 'cuda'))
+/home/runner/work/experiment_matsuzawa_20250826_7/experiment_matsuzawa_20250826_7/src/train.py:438: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=(amp and device.type == 'cuda')):
+/home/runner/work/experiment_matsuzawa_20250826_7/experiment_matsuzawa_20250826_7/src/train.py:472: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.barplot(x=names, y=throughputs, palette='viridis')
+/home/runner/work/experiment_matsuzawa_20250826_7/experiment_matsuzawa_20250826_7/src/train.py:493: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.barplot(x=names, y=mems, palette='magma')
+/home/runner/work/experiment_matsuzawa_20250826_7/experiment_matsuzawa_20250826_7/src/evaluate.py:121: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.barplot(x=names, y=mems, palette=colors)

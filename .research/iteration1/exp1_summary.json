@@ -1,0 +1,33 @@
+{
+  "train": {
+    "Baseline": {
+      "peak_mem_mb": 303.07470703125,
+      "imgs_per_sec": 23.868652257263683,
+      "final_loss": 0.7587129473686218
+    },
+    "RMCD(full)": {
+      "peak_mem_mb": 189.326171875,
+      "imgs_per_sec": 38.70118671807689,
+      "final_loss": 0.15590809285640717
+    },
+    "RMCD(-Rev)": {
+      "peak_mem_mb": 90.32958984375,
+      "imgs_per_sec": 72.0929371144719,
+      "final_loss": 0.6605184078216553
+    }
+  },
+  "infer": {
+    "Baseline": {
+      "peak_mem_mb": 43.38427734375,
+      "it_per_s": 93.15810632225393
+    },
+    "RMCD(full)": {
+      "peak_mem_mb": 41.6328125,
+      "it_per_s": 14.91008561835578
+    },
+    "RMCD(-Rev)": {
+      "peak_mem_mb": 41.6328125,
+      "it_per_s": 24.6646143713596
+    }
+  }
+}

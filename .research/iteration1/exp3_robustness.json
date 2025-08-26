@@ -1,0 +1,17 @@
+{
+  "Baseline": {
+    "peak_mem_mb": 52.78662109375,
+    "it_per_s": 28.562797507576015,
+    "oom": false
+  },
+  "RMCD(full)": {
+    "peak_mem_mb": 23.7275390625,
+    "it_per_s": 0.8724319826940677,
+    "oom": false
+  },
+  "RMCD(-Chunk)": {
+    "peak_mem_mb": 44.7353515625,
+    "it_per_s": 23.990482291571336,
+    "oom": false
+  }
+}

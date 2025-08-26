@@ -1,0 +1,15 @@
+mode: quick
+
+exp1:
+  steps: 8
+  img_size: 64
+  batch_size: 2
+  amp: false
+
+exp2:
+  sizes: [48, 64, 80]
+  steps: 5
+
+exp3:
+  size_4k: 256
+  steps: 6
